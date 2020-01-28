@@ -38,7 +38,7 @@ public class Frequencer implements FrequencerInterface{
     private void printSuffixArray() {
         if(spaceReady) {
             for(int i=0; i< mySpace.length; i++) {
-                System.out.print(suffixArray[i] + ":");
+                System.out.print(i + ":");
 
                 int s = suffixArray[i];
                 for(int j=s;j<mySpace.length;j++) {
@@ -142,7 +142,7 @@ public class Frequencer implements FrequencerInterface{
         // suffixArrayを探索するときに使う比較関数。
         // 次のように定義せよ
         // suffix_i is a string in mySpace starting at i-th position.
-        // target_i_k is a string in myTarget start at j-th postion ending k-th position.
+        // target_j_k is a string in myTarget start at j-th postion ending k-th position.
         // comparing suffix_i and target_j_k.
         // if the beginning of suffix_i matches target_i_k, it return 0.
         // The behavior is different from suffixCompare on this case.
@@ -169,8 +169,8 @@ public class Frequencer implements FrequencerInterface{
             i++;
             j++;
 	    }
-        if(mySpace.length - i < j - k + 1) return 1;
-        else if(mySpace.length - i > j - k + 1) return -1;
+        //if(mySpace.length - i < j - k + 1) return 1; //修正
+        if(mySpace.length - i < k - j) return -1;
 
         return 0;
     }
@@ -201,7 +201,7 @@ public class Frequencer implements FrequencerInterface{
         //                                                                          
         // ここにコードを記述せよ。
         for(int i = 0; i < suffixArray.length; i++){
-            if (targetCompare(suffixArray[i], start, end-1) == 0) return suffixArray[i];
+            if (targetCompare(suffixArray[i], start, end) == 0) return i;
         }                                                                        
         return suffixArray.length; //このコードは変更しなければならない。          
     }
@@ -231,7 +231,7 @@ public class Frequencer implements FrequencerInterface{
         //                                                                   
         //　ここにコードを記述せよ
         for(int i = 0; i < suffixArray.length; i++){
-            if (targetCompare(suffixArray[i], start, end-1) == 1) return suffixArray[i];
+            if (targetCompare(suffixArray[i], start, end) == 1) return i;
         }                                                                      
         return suffixArray.length; //このコードは変更しなければならない。
     }
