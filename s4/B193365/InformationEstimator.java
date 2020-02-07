@@ -1,6 +1,7 @@
 package s4.B193365; // Please modify to s4.Bnnnnnn, where nnnnnn is your student ID. 
 import java.lang.*;
 import s4.specification.*;
+import java.util.HashMap;
 
 /* What is imported from s4.specification
 package s4.specification;
@@ -18,44 +19,51 @@ public interface InformationEstimatorInterface{
 public class InformationEstimator implements InformationEstimatorInterface{
     // Code to tet, *warning: This code condtains intentional problem*
     byte [] myTarget; // data to compute its information quantity
-    byte [] mySpace;  // Sample space to compute the probability
+	byte [] mySpace;  // Sample space to compute the probability
+	HashMap<String,Double> IQ = new HashMap<>();//Map
+	String key = "\0"; //keyの初期化
+
     FrequencerInterface myFrequencer;  // Object for counting frequency
 
     byte [] subBytes(byte [] x, int start, int end) {
 	// corresponding to substring of String for  byte[] ,
 	// It is not implement in class library because internal structure of byte[] requires copy.
-	byte [] result = new byte[end - start];
-	for(int i = 0; i<end - start; i++) { result[i] = x[start + i]; };
-	return result;
+		byte [] result = new byte[end - start];
+		for(int i = 0; i<end - start; i++) { result[i] = x[start + i]; };
+		return result;
     }
 
     // IQ: information quantity for a count,  -log2(count/sizeof(space))
     double iq(int freq) {
-	return  - Math.log10((double) freq / (double) mySpace.length)/ Math.log10((double) 2.0);
+		return  - Math.log10((double) freq / (double) mySpace.length)/ Math.log10((double) 2.0);
     }
 
     public void setTarget(byte [] target) { myTarget = target;}
     public void setSpace(byte []space) { 
-	myFrequencer = new Frequencer();
-	mySpace = space; myFrequencer.setSpace(space); 
+		myFrequencer = new Frequencer();
+		mySpace = space; myFrequencer.setSpace(space); 
     }
     
     public double recursion(int start, int end){
-	if((end - start) == 0) return 0.0;
-	else if((end - start) == 1){
-	    myFrequencer.setTarget(subBytes(myTarget, start, end));
-	    return iq(myFrequencer.frequency());
-	}
-
-	double min = Double.MAX_VALUE;
-	for(int i = 0; i < end; i++){
-	    myFrequencer.setTarget(subBytes(myTarget, start + i, end));
-	    double value = recursion(start, i) + iq(myFrequencer.frequency());
-	    if(min > value){
-		min = value;
-	    }
-	}
-	return min;
+		if((end - start) == 0) return 0.0;
+		else if((end - start) == 1){
+			myFrequencer.setTarget(subBytes(myTarget, start, end));
+			return iq(myFrequencer.frequency());
+		}else if(IQ.containsKey(key)){
+			return IQ.get(key);//keyの値を返す
+		}
+		double min = Double.MAX_VALUE;
+		for(int i = 0; i < end; i++){
+			myFrequencer.setTarget(subBytes(myTarget, start + i, end));
+			key = new String(subBytes(myTarget,start,end));
+			double value = recursion(start, i) + iq(myFrequencer.frequency());
+			if(min > value){
+				min = value;
+                IQ.put(key,value);//targetとその情報量をリストに追加
+			}
+		}
+		key = "\0";//keyの初期化
+		return min;
     }
     
     public double estimation(){
