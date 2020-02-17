@@ -20,8 +20,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
     // Code to tet, *warning: This code condtains intentional problem*
     byte [] myTarget; // data to compute its information quantity
 	byte [] mySpace;  // Sample space to compute the probability
-	HashMap<String,Double> IQ = new HashMap<>();//Map
-	String key = "\0"; //keyの初期化
+	double [] ans;
 
     FrequencerInterface myFrequencer;  // Object for counting frequency
 
@@ -34,7 +33,9 @@ public class InformationEstimator implements InformationEstimatorInterface{
     }
 
     // IQ: information quantity for a count,  -log2(count/sizeof(space))
-    double iq(int freq) {
+    double iq(byte [] string) {
+		myFrequencer.setTarget(string);
+		int freq = myFrequencer.frequency();
 		return  - Math.log10((double) freq / (double) mySpace.length)/ Math.log10((double) 2.0);
     }
 
@@ -44,30 +45,29 @@ public class InformationEstimator implements InformationEstimatorInterface{
 		mySpace = space; myFrequencer.setSpace(space); 
     }
     
-    public double recursion(int start, int end){
-		if((end - start) == 0) return 0.0;
-		else if((end - start) == 1){
-			myFrequencer.setTarget(subBytes(myTarget, start, end));
-			return iq(myFrequencer.frequency());
-		}else if(IQ.containsKey(key)){
-			return IQ.get(key);//keyの値を返す
+    public double recursion(int length){
+		if(length == 0) return 0.0;
+		else if(ans[length - 1] != -1.0) {
+			return ans[length - 1];
 		}
+		
 		double min = Double.MAX_VALUE;
-		for(int i = 0; i < end; i++){
-			myFrequencer.setTarget(subBytes(myTarget, start + i, end));
-			key = new String(subBytes(myTarget,start,end));
-			double value = recursion(start, i) + iq(myFrequencer.frequency());
+		for(int i = 0; i < length; i++){
+			double value = recursion(i) + iq(subBytes(myTarget, i, length));
 			if(min > value){
 				min = value;
-                IQ.put(key,value);//targetとその情報量をリストに追加
 			}
 		}
-		key = "\0";//keyの初期化
+		ans[length - 1] = min;
 		return min;
-    }
+	}
     
     public double estimation(){
-        return recursion(0, myTarget.length);
+		ans = new double[myTarget.length];
+		for(int i = 0; i < myTarget.length; i++) {
+			ans[i] = -1.0;
+		}
+        return recursion(myTarget.length);
     }
 
     public static void main(String[] args) {
